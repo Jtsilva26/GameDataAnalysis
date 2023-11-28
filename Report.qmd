@@ -1,0 +1,43 @@
+---
+title: "Pay to Win: A Data-Driven Exploration of Gaming Industry Profits"
+format: pdf
+editor: visual
+---
+
+<!-- TOC -->
+
+<!-- Question -->
+
+# Introduction
+
+## Question
+
+///// stuff
+
+## Related work
+
+# Methods
+
+## Process: Data Search and Collection
+
+///// stuff
+
+## Process: Data Exploration
+
+///// stuff
+
+# Results
+
+## Process: Answer
+
+## Future Work
+
+## Conclusion
+
+### Contributions
+
+//// reiterate question
+
+///// give answer
+
+this is text
