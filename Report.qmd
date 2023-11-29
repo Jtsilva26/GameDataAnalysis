@@ -4,10 +4,6 @@ format: pdf
 editor: visual
 ---
 
-<!-- TOC -->
-
-<!-- Question -->
-
 # Introduction
 
 ## Question
@@ -16,28 +12,98 @@ editor: visual
 
 ## Related work
 
+// VGInsights output
+
+// sights we we got the data from
+
+// related analytics
+
+// most companies do something like this in their annuals
+
 # Methods
 
 ## Process: Data Search and Collection
 
-///// stuff
+### Searching for data
+
++// how we did it
+
++// Problems?
+
+### Obtaining Data: Web Scraping
+
++// how we did it
+
++// why so jank
+
++// Problems?
+
+### Obtaining data: Attempting to reach out to steam charts
+
+### Obtaining data: Kaggle
+
+## Cleaning Data
+
++// Making all the data uniform as can be
+
++// Handling Multiple sources of truth
+
++// inner joins to expand data
+
++// Cleaning dates and prices and modifying data (all the stuff we did in qmd tidy)
+
++// Problems?
 
 ## Process: Data Exploration
 
-///// stuff
+// Data exploration
+
++// How did we do it (dont talk about results yet, more technical, QMD and such)
+
++// What did we do, creating custom functions and stuff for filters,
+
++// What did we do specifically because our data was the way it was (see above)
+
++// Problems?
+
+// Graphs and insights
+
++// What graphs did we use?
+
++// Why? What about our data was useful for these graphs
+
++// What were we hoping to obtain by using these graph types.
+
++// Problems?
+
+// Linear models
+
++// What did we do with linear models?
+
++// What worked? what didnt? no results yet, just technical
+
++// Why did we do what we did with the linear models
+
++// Problems?
 
 # Results
 
 ## Process: Answer
+
++// What was our question again?
+
++// What games make most money
+
++// What games have the most players
+
++// What games have the most competition
+
++// How did we end up defining things
+
++// Issues with blowout hits (MAYBE PUT THIS IN THE SECTIONS BEFORE IE: HANDLING MASSIVE OUTLIERS)
 
 ## Future Work
 
 ## Conclusion
 
 ### Contributions
-
-//// reiterate question
-
-///// give answer
-
-this is text
