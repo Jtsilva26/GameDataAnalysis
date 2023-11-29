@@ -108,7 +108,7 @@ Dev_Tidy$`Avg revenue per game` <- sapply(Dev_Tidy$`Avg revenue per game`, conve
 print(Dev_Tidy)
 ```
 
-## Tiding the Steam dataset
+## Tiding the Steam Dataset
 
 ```{r}
 # Apply the function to create a list of genres
@@ -133,244 +133,81 @@ print(steam)
 ## Bar Chart for Avg Estimated Revenue of all Genres
 
 ```{r}
+my_genre_list <- c("Action", "Adventure", "Casual", "Early Access", "Free to Play", "Indie", "MMO", "Racing","RPG", "Simulation", "Sports","Strategy", "Valve")
+colors <- c("red", "green", "blue", "yellow", "orange", "purple", "pink", "skyblue", "coral", "gold", "seagreen", "turquoise", "brown", "gray", "ivory")
 
-#print(steam[indie_rows,])
-#print(steam$genres[20][[1]])
-#indierows <- DS_GetAllOf(steam, "release_date", "2001-06-01")
-#indierows
+genre_colors <- setNames(colors, my_genre_list)
 
-# Get revenue for all genres
-ActionRev <- DS_GetAllOf(Games_Tidy, "Genres", "Action")
-action_revenue <- mean(ActionRev$`Est. Revenue`)
 
-FreeToPlayRev <- DS_GetAllOf(Games_Tidy, "Genres", "Free to Play")
-free_to_play_revenue <- mean(FreeToPlayRev$`Est. Revenue`)
+# Initialize an empty list to store genre revenues
+genre_revenues <- list()
 
-MMORev <- DS_GetAllOf(Games_Tidy, "Genres", "MMO")
-mmo_revenue <- mean(MMORev$`Est. Revenue`)
+# Loop through each genre and calculate the mean revenue
+for (genre in my_genre_list) {
+  # Get revenue for the current genre
+  genre_revenues[[genre]] <- mean(DS_GetAllOf(Games_Tidy, "Genres", genre)$`Est. Revenue`)
+}
 
-AdventureRev <- DS_GetAllOf(Games_Tidy, "Genres", "Adventure")
-adventure_revenue <- mean(AdventureRev$`Est. Revenue`)
-
-StrategyRev <- DS_GetAllOf(Games_Tidy, "Genres", "Strategy")
-strategy_revenue <- mean(StrategyRev$`Est. Revenue`)
-
-IndieRev <- DS_GetAllOf(Games_Tidy, "Genres", "Indie")
-indie_revenue <- mean(IndieRev$`Est. Revenue`)
-
-RPGRev <- DS_GetAllOf(Games_Tidy, "Genres", "RPG")
-rpg_revenue <- mean(RPGRev$`Est. Revenue`)
-
-CasualRev <- DS_GetAllOf(Games_Tidy, "Genres", "Casual")
-casual_revenue <- mean(CasualRev$`Est. Revenue`)
-
-SimulationRev <- DS_GetAllOf(Games_Tidy, "Genres", "Simulation")
-simulation_revenue <- mean(SimulationRev$`Est. Revenue`)
-
-EarlyRev <- DS_GetAllOf(Games_Tidy, "Genres", "Early Access")
-early_revenue <- mean(EarlyRev$`Est. Revenue`)
-
-RacingRev <- DS_GetAllOf(Games_Tidy, "Genres", "Racing")
-racing_revenue <- mean(RacingRev$`Est. Revenue`)
-
-SportsRev <- DS_GetAllOf(Games_Tidy, "Genres", "Sports")
-sports_revenue <- mean(SportsRev$`Est. Revenue`)
-
-ValveRev <- DS_GetAllOf(Games_Tidy, "Genres", "Valve")
-valve_revenue <- mean(ValveRev$`Est. Revenue`)
-
-# Create a data frame with genres and revenues
+# Convert the list of revenues to a data frame
 revenue_data <- data.frame(
-  Genre = c("Action", "Free to Play", "MMO", "Adventure","Strategy", "Indie", "RPG", "Casual", "Simulation", "Early Access", "Racing", "Sports", "Valve"),
-  Revenue = c(action_revenue, free_to_play_revenue, mmo_revenue, adventure_revenue, strategy_revenue, indie_revenue, rpg_revenue, casual_revenue, simulation_revenue, early_revenue, racing_revenue, sports_revenue, valve_revenue)
+  Genre = names(genre_revenues),
+  Revenue = unlist(genre_revenues)
 )
 
-# Create a bar chart using ggplot
+# Create a bar chart using ggplot with mapped colors
 ggplot(revenue_data, aes(x = reorder(Genre, Revenue), y = Revenue, fill = Genre)) +
   geom_bar(stat = "identity", alpha = 0.9) +
   geom_text(aes(label = Revenue), vjust = -0.5, size = 2, color = "black") +
   labs(title = "Avg Estimated Revenue by Genre", x = "Genre", y = "Revenue") +
-  scale_fill_manual(values = c("Action" = "skyblue", "Free to Play" = "red", "MMO" = "green", "Adventure" = "yellow", "Strategy" = "purple", "Indie" = "pink", "RPG" = "black", "Casual" = "brown", "Simulation" = "coral", "Early Access" = "gold", "Racing" = "orange", "Sports" = "seagreen", "Valve" = "turquoise")) +
+  scale_fill_manual(values = genre_colors) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  scale_y_continuous(labels = scales::comma)  
-
+  scale_y_continuous(labels = scales::comma)
 ```
 
 ## Bar Chart for Count of games in all Genres
 
 ```{r}
-#Get Count for all genres
-action_count <- nrow(ActionRev)
-free_to_play_count <- nrow(FreeToPlayRev)
-mmo_count <- nrow(MMORev)
-adventure_count <- nrow(AdventureRev)
-strategy_count <- nrow(StrategyRev)
-indie_count <- nrow(IndieRev)
-rpg_count <- nrow(RPGRev)
-casual_count <- nrow(CasualRev)
-simulation_count <- nrow(SimulationRev)
-early_count <- nrow(EarlyRev)
-racing_count <- nrow(RacingRev)
-sports_count <- nrow(SportsRev)
-valve_count <- nrow(ValveRev)
+genre_counts <- list()
 
-# Create a data frame with genres and revenues
+# Loop through each genre and calculate the count of games
+for (genre in my_genre_list) {
+  # Get count for the current genre
+  genre_counts[[genre]] <- nrow(DS_GetAllOf(Games_Tidy, "Genres", genre))
+}
+
+# Convert the list of revenues to a data frame
 count_data <- data.frame(
-  Genre = c("Action", "Free to Play", "MMO", "Adventure","Strategy", "Indie", "RPG", "Casual", "Simulation", "Early Access", "Racing", "Sports", "Valve"),
-  Gamecount = c(action_count, free_to_play_count, mmo_count, adventure_count, strategy_count, indie_count, rpg_count, casual_count, simulation_count, early_count, racing_count, sports_count, valve_count)
+  Genre = names(genre_counts),
+  Gamecount = unlist(genre_counts)
 )
 
-# Create a bar chart using ggplot
+# Create a bar chart using ggplot with mapped colors
 ggplot(count_data, aes(x = reorder(Genre, Gamecount), y = Gamecount, fill = Genre)) +
   geom_bar(stat = "identity", alpha = 0.9) +
   geom_text(aes(label = Gamecount), vjust = -0.5, size = 3, color = "black") +
   labs(title = "Count of Games", x = "Genre", y = "Count") +
-  scale_fill_manual(values = c("Action" = "skyblue", "Free to Play" = "red", "MMO" = "green", "Adventure" = "yellow", "Strategy" = "purple", "Indie" = "pink", "RPG" = "black", "Casual" = "brown", "Simulation" = "coral", "Early Access" = "gold", "Racing" = "orange", "Sports" = "seagreen", "Valve" = "turquoise")) +
+  scale_fill_manual(values = genre_colors) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
 ## Games Released per year by Genre
 
 ```{r}
-##ACTION
-
-ActionRev <- ActionRev %>%
-  mutate(year = format(`First Released`, "%Y"))
-
-ggplot(ActionRev, aes(x = year)) +
-  geom_bar(stat = "count", fill = "skyblue", color = "black") +
-  geom_text(stat = "count", aes(label = ..count..), vjust = -0.5, size = 3) +
-  labs(x = "Years", y = "Count", title = "Count of Action games by year") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-##INDIE
-
-IndieRev <- IndieRev %>%
-  mutate(year = format(`First Released`, "%Y"))
-
-ggplot(IndieRev, aes(x = year)) +
-  geom_bar(stat = "count", fill = "pink", color = "black") +
-  geom_text(stat = "count", aes(label = ..count..), vjust = -0.5, size = 3) + 
-  labs(x = "Years", y = "Count", title = "Count of Indie games by year") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-##Adventure
-
-AdventureRev <- AdventureRev %>%
-  mutate(year = format(`First Released`, "%Y"))
-
-ggplot(AdventureRev, aes(x = year)) +
-  geom_bar(stat = "count", fill = "yellow", color = "black") +
-  geom_text(stat = "count", aes(label = ..count..), vjust = -0.5, size = 3) + 
-  labs(x = "Years", y = "Count", title = "Count of Adventure games by year") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-##RPG
-RPGRev <- RPGRev %>%
-  mutate(year = format(`First Released`, "%Y"))
-
-ggplot(RPGRev, aes(x = year)) +
-  geom_bar(stat = "count", fill = "black", color = "black") +
-  geom_text(stat = "count", aes(label = ..count..), vjust = -0.5, size = 3) + 
-  labs(x = "Years", y = "Count", title = "Count of RPG games by year") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-##Strategy
-
-StrategyRev <- StrategyRev %>%
-  mutate(year = format(`First Released`, "%Y"))
-
-ggplot(StrategyRev, aes(x = year)) +
-  geom_bar(stat = "count", fill = "purple", color = "black") +
-  geom_text(stat = "count", aes(label = ..count..), vjust = -0.5, size = 3) + 
-  labs(x = "Years", y = "Count", title = "Count of Strategy games by year") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-##Simulation
-
-SimulationRev <- SimulationRev %>%
-  mutate(year = format(`First Released`, "%Y"))
-
-ggplot(SimulationRev, aes(x = year)) +
-  geom_bar(stat = "count", fill = "coral", color = "black") +
-  geom_text(stat = "count", aes(label = ..count..), vjust = -0.5, size = 3) + 
-  labs(x = "Years", y = "Count", title = "Count of Simulation games by year") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-##Free to Play
-
-FreeToPlayRev <- FreeToPlayRev %>%
-  mutate(year = format(`First Released`, "%Y"))
-
-ggplot(FreeToPlayRev, aes(x = year)) +
-  geom_bar(stat = "count", fill = "green", color = "black") +
-  geom_text(stat = "count", aes(label = ..count..), vjust = -0.5, size = 3) + 
-  labs(x = "Years", y = "Count", title = "Count of Free to Play games by year") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-##MMO
-
-MMORev <- MMORev %>%
-  mutate(year = format(`First Released`, "%Y"))
-
-ggplot(MMORev, aes(x = year)) +
-  geom_bar(stat = "count", fill = "brown", color = "black") +
-  geom_text(stat = "count", aes(label = ..count..), vjust = -0.5, size = 3) + 
-  labs(x = "Years", y = "Count", title = "Count of MMO games by year") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-##Casual
-
-CasualRev <- CasualRev %>%
-  mutate(year = format(`First Released`, "%Y"))
-
-ggplot(CasualRev, aes(x = year)) +
-  geom_bar(stat = "count", fill = "gold", color = "black") +
-  geom_text(stat = "count", aes(label = ..count..), vjust = -0.5, size = 3) + 
-  labs(x = "Years", y = "Count", title = "Count of Casual games by year") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-##Early Access
-
-EarlyRev <- EarlyRev %>%
-  mutate(year = format(`First Released`, "%Y"))
-
-ggplot(EarlyRev, aes(x = year)) +
-  geom_bar(stat = "count", fill = "purple", color = "black") +
-  geom_text(stat = "count", aes(label = ..count..), vjust = -0.5, size = 3) + 
-  labs(x = "Years", y = "Count", title = "Count of Early Access games by year") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-##Sports
-
-SportsRev <- SportsRev %>%
-  mutate(year = format(`First Released`, "%Y"))
-
-ggplot(SportsRev, aes(x = year)) +
-  geom_bar(stat = "count", fill = "seagreen", color = "black") +
-  geom_text(stat = "count", aes(label = ..count..), vjust = -0.5, size = 3) + 
-  labs(x = "Years", y = "Count", title = "Count of Sports games by year") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-##Valve
-
-ValveRev <- ValveRev %>%
-  mutate(year = format(`First Released`, "%Y"))
-
-ggplot(ValveRev, aes(x = year)) +
-  geom_bar(stat = "count", fill = "turquoise", color = "black") +
-  geom_text(stat = "count", aes(label = ..count..), vjust = -0.5, size = 3) + 
-  labs(x = "Years", y = "Count", title = "Count of Valve games by year") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-##Racing
-
-RacingRev <- RacingRev %>%
-  mutate(year = format(`First Released`, "%Y"))
-
-ggplot(RacingRev, aes(x = year)) +
-  geom_bar(stat = "count", fill = "orange", color = "black") +
-  geom_text(stat = "count", aes(label = ..count..), vjust = -0.5, size = 3) + 
-  labs(x = "Years", y = "Count", title = "Count of Racing games by year") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+# Create and display separate histograms for each genre in your list
+for (genre in my_genre_list) {
+  # Filter data for the current genre
+  genre_subset <- DS_GetAllOf(Games_Tidy, "Genres", genre)
+  genre_subset <- genre_subset %>%
+    mutate(year = format(`First Released`, "%Y"))
+  
+  # Create a histogram for the current genre with unique color
+  p <- ggplot(genre_subset, aes(x = year)) +
+    geom_bar(stat = "count", fill = genre_colors[genre], color = "black") +
+    labs(x = "Years", y = "Count", title = paste("Count of Games per year for", genre)) +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    geom_text(stat = "count", aes(label = ..count..), vjust = -0.5, size = 3)
+  
+  # Print the plot (display in R environment)
+  print(p)
+}
 ```
