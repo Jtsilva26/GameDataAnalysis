@@ -1,0 +1,141 @@
+---
+title: "Steam_Tidy"
+format: html
+editor: visual
+---
+
+```{r}
+library(tidyverse)
+library(dplyr)
+library(readr)
+library(tibble)
+library(stringr)
+
+Games_Tidy <- read_csv("https://raw.githubusercontent.com/Jtsilva26/GameDataAnalysis/main/Games.csv", show_col_types=FALSE)
+
+Dev_Tidy <- read_csv("https://raw.githubusercontent.com/Jtsilva26/GameDataAnalysis/main/Developer.csv", show_col_types=FALSE)
+
+steam <- read_csv("https://raw.githubusercontent.com/Jtsilva26/GameDataAnalysis/main/steam.csv", col_types = cols(release_date = col_date(format = "%Y-%m-%d")))
+```
+
+## Convert Numerical Values Function
+
+```{r}
+# Function to convert abbreviated revenue to numerical values
+convert_revenue <- function(revenue) {
+  # If the revenue contains 'm' (million), remove 'm' and multiply by 1,000,000
+  if (grepl("m", revenue, fixed = TRUE)) {
+    revenue <- as.numeric(gsub("[^0-9.]", "", revenue)) * 1000000
+  }
+  # If the revenue contains 'b' (billion), remove 'b' and multiply by 1,000,000,000
+  else if (grepl("b", revenue, fixed = TRUE)) {
+    revenue <- as.numeric(gsub("[^0-9.]", "", revenue)) * 1000000000
+  }
+  # If the revenue contains 'k' (thousand), remove 'k' and multiply by 1,000
+  else if (grepl("k", revenue, fixed = TRUE)) {
+    revenue <- as.numeric(gsub("[^0-9.]", "", revenue)) * 1000
+  } else {
+    revenue <- as.numeric(gsub("[^0-9.]", "", revenue))
+  }
+  return(revenue)
+}
+```
+
+## Removing Commas and Semi-colons Function
+
+```{r}
+split_genres_games <- function(genre_string_games) {
+  genre_list_games <- unlist(strsplit(genre_string_games, ", "))
+  return(genre_list_games)
+}
+
+split_genres_steam <- function(genre_string_steam) {
+  genre_list_steam <- unlist(strsplit(genre_string_steam, ";"))
+  return(genre_list_steam)
+}
+```
+
+## Filter Function
+
+```{r}
+DS_GetAllOf <- function(data, col_name, search_val) {
+  desired_rows <- which(sapply(data[[col_name]], function(x) search_val %in% x[[1]]))
+  return(data[desired_rows,])
+}
+```
+
+## Tiding the Games dataset
+
+```{r}
+# Apply the function to the 'reviews' column in the 'Games' data frame
+Games_Tidy$Reviews <- sapply(Games_Tidy$Reviews, convert_revenue)
+Games_Tidy$`Est. Units Sold` <- sapply(Games_Tidy$`Est. Units Sold`, convert_revenue)
+Games_Tidy$Followers <- sapply(Games_Tidy$Followers, convert_revenue)
+Games_Tidy$`Est. Revenue` <- sapply(Games_Tidy$`Est. Revenue`, convert_revenue)
+
+# Remove the 'review_numeric' column if you no longer need it
+Games_Tidy$review_numeric <- NULL
+Games_Tidy$follower_numeric <- NULL
+Games_Tidy$units_sold <- NULL
+Games_Tidy$revenue <- NULL
+
+# Apply the function to create a list of genres
+Games_Tidy$Genres <- lapply(Games_Tidy$Genres, split_genres_games)
+
+Games_Tidy$Developers <- lapply(Games_Tidy$Developers, split_genres_games)
+
+Games_Tidy$Publishers <- lapply(Games_Tidy$Publishers, split_genres_games)
+
+Games_Tidy$`Publisher Class` <- lapply(Games_Tidy$`Publisher Class`, split_genres_games)
+
+# Rearrange the date values in the dataset
+Games_Tidy$`First Released` <- as.Date(Games_Tidy$`First Released`, format = "%b %d, %Y")
+
+# Converts all FREE values in price to 0.00
+Games_Tidy$Price[Games_Tidy$Price == "Free"] <- "$0.00"
+
+# Removes dollar sign and converts them to doubles
+Games_Tidy$Price <- as.numeric(gsub("\\$", "", Games_Tidy$Price))
+
+# Now, the 'Reviews' column contains the converted values
+print(Games_Tidy)
+```
+
+## Tiding the Devs dataset
+
+```{r}
+Dev_Tidy$`Total revenue` <- sapply(Dev_Tidy$`Total revenue`, convert_revenue)
+Dev_Tidy$`Avg revenue per game` <- sapply(Dev_Tidy$`Avg revenue per game`, convert_revenue)
+
+print(Dev_Tidy)
+```
+
+## Tiding the Steam dataset
+
+```{r}
+# Apply the function to create a list of genres
+steam$genres <- sapply(steam$genres,split_genres_steam)
+
+steam$steamspy_tags <- sapply(steam$steamspy_tags,split_genres_steam)
+
+steam$categories <- sapply(steam$categories, split_genres_steam)
+
+steam$platforms <- sapply(steam$platforms, split_genres_steam)
+
+steam$developer <- sapply(steam$developer, split_genres_steam)
+
+steam$publisher <- sapply(steam$publisher, split_genres_steam)
+
+# Access the third element (Multiplayer) in the split data
+desired_element <- steam$genres
+
+print(steam)
+```
+
+```{r}
+print(steam$genres[20][[1]])
+indierows <- DS_GetAllOf(steam, "genres", "Action")
+indierows
+```
+
+\
