@@ -157,11 +157,11 @@ revenue_data <- data.frame(
 # Create a bar chart using ggplot with mapped colors
 ggplot(revenue_data, aes(x = reorder(Genre, Revenue), y = Revenue, fill = Genre)) +
   geom_bar(stat = "identity", alpha = 0.9) +
-  geom_text(aes(label = Revenue), vjust = -0.5, size = 2, color = "black") +
+  geom_text(aes(label = format(Revenue, scientific = FALSE)), vjust = -0.5, size = 2, color = "black") + # Format Revenue values
   labs(title = "Avg Estimated Revenue by Genre", x = "Genre", y = "Revenue") +
   scale_fill_manual(values = genre_colors) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  scale_y_continuous(labels = scales::comma)
+  scale_y_continuous(labels = function(x) format(x, scientific = FALSE))
 ```
 
 ## Bar Chart for Count of games in all Genres
@@ -210,4 +210,60 @@ for (genre in my_genre_list) {
   # Print the plot (display in R environment)
   print(p)
 }
+```
+
+## Bar Chart for Avg Estimated Games sold by Genre
+
+```{r}
+genre_sold <- list()
+
+# Loop through each genre and calculate the mean revenue
+for (genre in my_genre_list) {
+  # Get revenue for the current genre
+  genre_sold[[genre]] <- mean(DS_GetAllOf(Games_Tidy, "Genres", genre)$'Est. Units Sold')
+}
+
+# Convert the list of revenues to a data frame
+sold_data <- data.frame(
+  Genre = names(genre_sold),
+  Sold = unlist(genre_sold)
+)
+
+# Create a bar chart using ggplot with mapped colors
+ggplot(sold_data, aes(x = reorder(Genre, Sold), y = Sold, fill = Genre)) +
+  geom_bar(stat = "identity", alpha = 0.9) +
+  geom_text(aes(label = format(Sold, scientific = FALSE)), vjust = -0.5, size = 2, color = "black") + 
+  labs(title = "Avg Estimated Games sold by Genre", x = "Genre", y = "Sold") +
+  scale_fill_manual(values = genre_colors) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_y_continuous(labels = function(x) format(x, scientific = FALSE)) 
+```
+
+## Bar Chart of Avg Steam Rating per Genre
+
+```{r}
+my_rating_list <- c("Action", "Adventure", "Casual", "Early Access", "Free to Play", "Indie", "MMO", "Racing","RPG", "Simulation", "Sports","Strategy")
+
+Steam_rating <- Games_Tidy %>%
+  mutate(Steam_rating = as.numeric(sub("%", "", `Steam Rating`)) * 100)
+
+genre_rating <- list()
+
+for (genre in my_rating_list) {
+  # Get revenue for the current genre
+  genre_rating[[genre]] <- mean(DS_GetAllOf(Games_Tidy, "Genres", genre)$'Steam Rating' * 100)
+}
+
+rating_data <- data.frame(
+  Genre = names(genre_rating),
+  Rating = unlist(genre_rating)
+)
+
+ggplot(rating_data, aes(x = reorder(Genre, Rating), y = Rating, fill = Genre)) +
+  geom_bar(stat = "identity", alpha = 0.9) +
+  geom_text(aes(label = format(Rating, scientific = FALSE)), vjust = -0.5, size = 2.1, color = "black") + 
+  labs(title = "Avg Steam Rating per Genre", x = "Genre", y = "Percentage Rating") +
+  scale_fill_manual(values = genre_colors) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_y_continuous(labels = function(x) format(x, scientific = FALSE)) 
 ```
