@@ -130,6 +130,8 @@ desired_element <- steam$genres
 print(steam)
 ```
 
+# [Games_Tidy EDA]{.underline}
+
 ## Bar Chart for Avg Estimated Revenue of all Genres
 
 ```{r}
@@ -137,7 +139,6 @@ my_genre_list <- c("Action", "Adventure", "Casual", "Early Access", "Free to Pla
 colors <- c("red", "green", "blue", "yellow", "orange", "purple", "pink", "skyblue", "coral", "gold", "seagreen", "turquoise", "brown", "gray", "ivory")
 
 genre_colors <- setNames(colors, my_genre_list)
-
 
 # Initialize an empty list to store genre revenues
 genre_revenues <- list()
@@ -244,14 +245,14 @@ ggplot(sold_data, aes(x = reorder(Genre, Sold), y = Sold, fill = Genre)) +
 ```{r}
 my_rating_list <- c("Action", "Adventure", "Casual", "Early Access", "Free to Play", "Indie", "MMO", "Racing","RPG", "Simulation", "Sports","Strategy")
 
-Steam_rating <- Games_Tidy %>%
-  mutate(Steam_rating = as.numeric(sub("%", "", `Steam Rating`)) * 100)
+data_rating <- Games_Tidy %>%
+  mutate(Transformed_Rating = as.numeric(sub("%", "", `Steam Rating`)) / 100)
 
 genre_rating <- list()
 
 for (genre in my_rating_list) {
   # Get revenue for the current genre
-  genre_rating[[genre]] <- mean(DS_GetAllOf(Games_Tidy, "Genres", genre)$'Steam Rating' * 100)
+  genre_rating[[genre]] <- mean(DS_GetAllOf(data_rating, "Genres", genre)$'Transformed_Rating'*100)
 }
 
 rating_data <- data.frame(
@@ -261,9 +262,60 @@ rating_data <- data.frame(
 
 ggplot(rating_data, aes(x = reorder(Genre, Rating), y = Rating, fill = Genre)) +
   geom_bar(stat = "identity", alpha = 0.9) +
-  geom_text(aes(label = format(Rating, scientific = FALSE)), vjust = -0.5, size = 2.1, color = "black") + 
-  labs(title = "Avg Steam Rating per Genre", x = "Genre", y = "Percentage Rating") +
+  geom_text(aes(label = format(Rating, scientific = FALSE)), vjust = -0.5, size = 2, color = "black") + 
+  labs(title = "Avg Estimated Ratings % by Genre", x = "Genre", y = "Rating Percentage") +
   scale_fill_manual(values = genre_colors) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   scale_y_continuous(labels = function(x) format(x, scientific = FALSE)) 
+
+
+
+```
+
+# [Dev EDA]{.underline}
+
+## Count of Games by Classification
+
+```{r}
+classification_list <- c("AA", "AAA", "Indie")
+colored <- c("red", "green", "blue")
+genre_Dev <- setNames(colored, classification_list)
+
+classification_count <- list()
+
+for (genre in classification_list) {
+  # Get count for the current genre
+  classification_count[[genre]] <- nrow(DS_GetAllOf(Dev_Tidy, "Classification", genre))
+}
+
+classification_data <- data.frame(
+  Genre = names(classification_count),
+  Gamecount = unlist(classification_count)
+)
+
+ggplot(classification_data, aes(x = reorder(Genre, Gamecount), y = Gamecount, fill = Genre)) +
+  geom_bar(stat = "identity", alpha = 0.9) +
+  geom_text(aes(label = Gamecount), vjust = -0.5, size = 3, color = "black") +
+  labs(title = "Count of Games", x = "Classification", y = "Count") +
+  scale_fill_manual(values = genre_Dev) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## Point Graph to show Avg revenue & Number of games by Classification
+
+```{r}
+ggplot(data = Dev_Tidy, mapping = aes(x=Dev_Tidy$`Released games`, y=Dev_Tidy$`Avg revenue per game`, color= Classification)) +
+  geom_point() + 
+  scale_y_continuous(labels = function(x) format(x, scientific = FALSE)) +
+  labs(title = "Avg revenue & Number of games by Classification", x = "Released games", y = "Revenue")
+```
+
+```{r}
+ggplot(data = Dev_Tidy, mapping = aes(x = `Released games`, y = `Avg revenue per game`, color = Classification)) +
+  geom_point() +
+  geom_line() +
+  scale_y_continuous(labels = function(x) format(x, scientific = FALSE)) +
+  labs(title = "Avg revenue & Number of games by Classification", x = "Released games", y = "Revenue") +
+  facet_wrap(~ Classification, scales = "free")
+
 ```
