@@ -4,6 +4,11 @@ format: pdf
 editor: visual
 ---
 
+```{r}
+
+# Place your initializer chunks here.
+```
+
 # Introduction
 
 ## Question
@@ -14,9 +19,15 @@ editor: visual
 
 // VGInsights output
 
+K: Revenue analysis is not something foreign to the gaming industry or any industry in general. Various other platforms exist to perform these analytics as well as several platforms whose sole purpose is to provide this data. VGInsights is one such company focusing on analytics on both a micro and macro scale as it pertains to game development as an industry. A lot of our initial data was obtained using the data they provide for free as a sample.
+
 // sights we we got the data from
 
+K: There exists several other sites for pulling data. VGChartz is another such site where data is collected and aggregated. This site also has tools for examining data on a macro level looking at which consoles perform better.
+
 // related analytics
+
+K: A large source of inspiration for was came from [How To Market A Game](https://howtomarketagame.com/2022/04/18/what-genres-are-popular-on-steam-in-2022/)'s industry analysis on popular genres. The entire site is an analytic gold mine of charts and information helping developers make informed decisions in the industry. It's also worth pointing out a lot of the statistical analysis we attempt to do here and the inspirations above end up being performed in-house for larger companies and then are disclosed in shareholder meetings.
 
 // most companies do something like this in their annuals
 
@@ -102,8 +113,22 @@ editor: visual
 
 +// Issues with blowout hits (MAYBE PUT THIS IN THE SECTIONS BEFORE IE: HANDLING MASSIVE OUTLIERS)
 
-## Future Work
+## Conclusions / Future Work
 
-## Conclusion
+K: As stated in our introduction, this sort of analysis continues to be commonplace in the development industry. If a party were to look at our research and want to push the needle, I believe these areas could be improved upon.
+
+-   Data collection
+
+    -   Data collection ended up being more difficult than expected. A more comprehensive data set would go a long way to achieving some of the analytic goals we set out to accomplish.
+
+-   Temporal Analysis
+
+    -   Our data is sporadic in nature but time is another strong point which could be more closely observed. Do certain games sell better during holiday seasons? Were there any trends that carried certain titles into stardom? A time series analysis would be incredibly beneficial to realizing these models for operational use.
+
+-   User behavior
+
+    -   Data was not collected nor included for user interaction. Things like session time, social interactions, and purchase decisions within a game play a large role in revenue accumulation for live service games.
+
+In conclusion, while our current analysis provided valuable insights through exploratory data analysis, the potential for more accurate and reliable revenue prediction models remains untapped due to data limitations. Future endeavors focusing on expanding data sources, refining features, exploring advanced modeling techniques, and incorporating external market dynamics will substantially enhance the predictive capabilities of our revenue analysis for game development.
 
 ### Contributions
