@@ -130,8 +130,6 @@ print(steam)
 ```
 
 ```{r}
-print(steam[indie_rows,])
-print(steam$genres[20][[1]])
-indierows <- DS_GetAllOf(steam, "release_date", "2001-06-01")
+indierows <- DS_GetAllOf(steam, "genres", "Indie")
 indierows
 ```
