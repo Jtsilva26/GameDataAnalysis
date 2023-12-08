@@ -1,0 +1,727 @@
+---
+title: "Pay to Win: A Data-Driven Exploration of Gaming Industry Profits"
+format: pdf
+editor: visual
+---
+
+```{r}
+
+# Place your initializer chunks here.
+
+# Travis
+#install.packages("caret")
+library(tidyverse)
+library(tidymodels)
+library(dplyr)
+library(readr)
+library(tibble)
+library(stringr)
+library(caret)
+Games_Tidy <- read_csv("https://raw.githubusercontent.com/Jtsilva26/GameDataAnalysis/main/Games.csv", show_col_types=FALSE)
+Dev_Tidy <- read_csv("https://raw.githubusercontent.com/Jtsilva26/GameDataAnalysis/main/Developer.csv", show_col_types=FALSE)
+steam <- read_csv("https://raw.githubusercontent.com/Jtsilva26/GameDataAnalysis/main/steam.csv", col_types = cols(my_date = col_date(format = "%Y-%m-%d")))
+
+
+```
+
+# TO MAKE IT WORK (REMOVE FOR FINAL PRODUCT OR OTHERS WORK)
+
+```{r}
+# Function to convert abbreviated revenue to numerical values
+convert_revenue <- function(revenue) {
+  # If the revenue contains 'm' (million), remove 'm' and multiply by 1,000,000
+  if (grepl("m", revenue, fixed = TRUE)) {
+    revenue <- as.numeric(gsub("[^0-9.]", "", revenue)) * 1000000
+  }
+  # If the revenue contains 'b' (billion), remove 'b' and multiply by 1,000,000,000
+  else if (grepl("b", revenue, fixed = TRUE)) {
+    revenue <- as.numeric(gsub("[^0-9.]", "", revenue)) * 1000000000
+  }
+  # If the revenue contains 'k' (thousand), remove 'k' and multiply by 1,000
+  else if (grepl("k", revenue, fixed = TRUE)) {
+    revenue <- as.numeric(gsub("[^0-9.]", "", revenue)) * 1000
+  } else {
+    revenue <- as.numeric(gsub("[^0-9.]", "", revenue))
+  }
+  return(revenue)
+}
+```
+
+```{r}
+split_genres_games <- function(genre_string_games) {
+  genre_list_games <- unlist(strsplit(genre_string_games, ", "))
+  return(genre_list_games)
+}
+
+split_genres_steam <- function(genre_string_steam) {
+  genre_list_steam <- unlist(strsplit(genre_string_steam, ";"))
+  return(genre_list_steam)
+}
+```
+
+```{r}
+DS_GetAllOf <- function(data, col_name, search_val) {
+  desired_rows <- which(sapply(data[[col_name]], function(x) search_val %in% x[[1]]))
+  return(data[desired_rows,])
+}
+```
+
+```{r}
+# Apply the function to the 'reviews' column in the 'Games' data frame
+Games_Tidy$Reviews <- sapply(Games_Tidy$Reviews, convert_revenue)
+Games_Tidy$`Est. Units Sold` <- sapply(Games_Tidy$`Est. Units Sold`, convert_revenue)
+Games_Tidy$Followers <- sapply(Games_Tidy$Followers, convert_revenue)
+Games_Tidy$`Est. Revenue` <- sapply(Games_Tidy$`Est. Revenue`, convert_revenue)
+
+# Remove the 'review_numeric' column if you no longer need it
+Games_Tidy$review_numeric <- NULL
+Games_Tidy$follower_numeric <- NULL
+Games_Tidy$units_sold <- NULL
+Games_Tidy$revenue <- NULL
+
+# Apply the function to create a list of genres
+Games_Tidy$Genres <- lapply(Games_Tidy$Genres, split_genres_games)
+
+Games_Tidy$Developers <- lapply(Games_Tidy$Developers, split_genres_games)
+
+Games_Tidy$Publishers <- lapply(Games_Tidy$Publishers, split_genres_games)
+
+Games_Tidy$`Publisher Class` <- lapply(Games_Tidy$`Publisher Class`, split_genres_games)
+
+# Rearrange the date values in the dataset
+Games_Tidy$`First Released` <- as.Date(Games_Tidy$`First Released`, format = "%b %d, %Y")
+
+# Converts all FREE values in price to 0.00
+Games_Tidy$Price[Games_Tidy$Price == "Free"] <- "$0.00"
+
+# Removes dollar sign and converts them to doubles
+Games_Tidy$Price <- as.numeric(gsub("\\$", "", Games_Tidy$Price))
+
+# Now, the 'Reviews' column contains the converted values
+print(Games_Tidy)
+```
+
+```{r}
+Dev_Tidy$`Total revenue` <- sapply(Dev_Tidy$`Total revenue`, convert_revenue)
+Dev_Tidy$`Avg revenue per game` <- sapply(Dev_Tidy$`Avg revenue per game`, convert_revenue)
+
+print(Dev_Tidy)
+```
+
+```{r}
+# Apply the function to create a list of genres
+steam$genres <- sapply(steam$genres,split_genres_steam)
+
+steam$steamspy_tags <- sapply(steam$steamspy_tags,split_genres_steam)
+
+steam$categories <- sapply(steam$categories, split_genres_steam)
+
+steam$platforms <- sapply(steam$platforms, split_genres_steam)
+
+steam$developer <- sapply(steam$developer, split_genres_steam)
+
+steam$publisher <- sapply(steam$publisher, split_genres_steam)
+
+# Access the third element (Multiplayer) in the split data
+desired_element <- steam$genres
+
+print(steam)
+```
+
+```{r}
+Steam_Tidy <- steam %>%
+ mutate(rating = steam$positive_ratings/(steam$positive_ratings + steam$negative_ratings)) %>%
+  select(appid, name, release_date, english, developer, publisher, platforms, required_age, categories, genres, steamspy_tags, achievements, positive_ratings, negative_ratings, average_playtime, median_playtime, rating, owners, price)
+```
+
+```{r}
+indierows <- DS_GetAllOf(Steam_Tidy, "release_date", "2001-06-01")
+indierows
+```
+
+# END OF CODE NEEDED TO MAKE IT WORK
+
+# Introduction
+
+## Question
+
+///// stuff
+
+## Related work
+
+// VGInsights output
+
+Kadyn: Revenue analysis is not something foreign to the gaming industry or any industry in general. Various other platforms exist to perform these analytics as well as several platforms whose sole purpose is to provide this data. VGInsights is one such company focusing on analytics on both a micro and macro scale as it pertains to game development as an industry. A lot of our initial data was obtained using the data they provide for free as a sample.
+
+// sights we we got the data from
+
+Kadyn: There exists several other sites for pulling data. VGChartz is another such site where data is collected and aggregated. This site also has tools for examining data on a macro level looking at which consoles perform better.
+
+// related analytics
+
+Kadyn: A large source of inspiration for was came from [How To Market A Game](https://howtomarketagame.com/2022/04/18/what-genres-are-popular-on-steam-in-2022/)'s industry analysis on popular genres. The entire site is an analytic gold mine of charts and information helping developers make informed decisions in the industry. It's also worth pointing out a lot of the statistical analysis we attempt to do here and the inspirations above end up being performed in-house for larger companies and then are disclosed in shareholder meetings.
+
+// most companies do something like this in their annuals
+
+# Methods
+
+## Process: Data Search and Collection
+
+### Searching for data
+
++// how we did it
+
+-   Travis: Google searching mostly
+-   Jordan: Google searching and looking at Reddit pages
+
++// Problems?
+
+-   Travis: A lot of the better data was behind a pay wall and a few sources that had good data on github required an "ok" before using their data and they turned us down.
+-   Jordan: Looking for reliable data without breaking into the bank. Also having permission to scrap data from sites without being in trouble.
+-   Alex Rosete: One of the sources we asked through email to use, but we were denied due to unknown reasons.
+
+### Obtaining Data: Web Scraping
+
++// how we did it
+
+-   Jordan: How we got some of our data sets was pulling the row from the html and the inner message which held the rows data. From there we used excel and a python script to reorganize the data to make sure it was readable since some columns had empty spots which made the csv not fit perfectly.
+
+<!-- -->
+
+-   Alex Rosete: We scraped the sites by grabbing the data on each line since it was dynamically generated and writing it down into a file. We checked the integrity by having another pair of eyes looking at the data set and checking if their were any blank or missing values in each column. Confirmed it afterwards by looking over our data set we created and the one they had up on their site.
+
++// why so jank
+
+-   Jordan: It had it's issues because most sites loaded their data onto the table which gave issues when trying to use R studio to pull the data. Which led us to manually grabbing the data and have to clean it up so it was usable.
+
+-   Alex Rosete: Dynamically Generated tables on webpages are very hard to scrape because they do not just store their data on the page in an easy accessible manner.
+
++// Problems?
+
+-   Travis: The better sources were hard to web-scrape due to the site being loaded dynamically on clicking the table. We ran into issues using RSelenium and the web drivers for the different browsers not being accessible and making it just about impossible to web-scrape easily. This ended up being the start of our problems that led to us having the data we ended up with. Below is a snippet of some of the code we used to scrape of our initial data sources.
+-   Alex Rosete: There was another issue with the data as some of the columns fields were blank so scraping the dynamically loaded tables were even more difficult and would mess up certain rows, causing loss of data integrity.
+-   Jordan: Most of our issues came from not having approval to scrap some sites and the inability to scrap site due to how the data was being presented.
+
+```         
+driver <- rsDriver(browser = "chrome")
+remote_driver <- driver$client
+remote_driver$navigate("https://vginsights.com/games-database")
+remote_driver$findElement(using = "css selector", value = "span > button")->element
+element$clickElement()
+
+## find button to click to load content
+game.data <- read_html("https://vginsights.com/games-database") %>%
+  html_element(".mat-typography") %>%
+  html_element("app-root")
+
+game.data
+```
+
+### Obtaining data: Attempting to reach out to steam charts
+
+Jordan: We reached out to Steam charts which held a active data set of all games on steam, how much they were listed for at the present time, ratings of the games performance, which genre tags they had, and player activity. However, when we reached out to them to see if we could have access to that data set or a smaller data set for school purposes we were unfortunately denied and had to use smaller data sets that were considered samples from the main set.
+
+### Obtaining data: Kaggle
+
+Jordan: Now looking at other options, we came across this data set on kaggle was older than some of data sets, but held a large amount of data on our topic so took into account for the difference in prices since steam's prices on games change frequently meaning some data values may differ from the time they were recorded.
+
+## Cleaning Data
+
++// Making all the data uniform as can be
+
+Jordan: When cleaning the data I wanted comma separated values to be read as a list, so I split the commas and colons from the data and had them read them as a list which allows us to look at each individual item in the list instead of trying to parse a long string.
+
++// Handling Multiple sources of truth
+
++// inner joins to expand data
+
+-   Travis: Joining the data was a problem because I needed data from each table to do the linear regression. However, upon doing the join it severely limited the number of entries in the table down to 140.
+
++// Cleaning dates and prices and modifying data (all the stuff we did in qmd tidy)
+
+-   Travis: Alex and I altered Steam Rating column to no longer be a char and be a double in decimal form (was percentage) to be used in the linear regression. I also pruned the rows that had 0's in the Est.Revenue as they were severely hindering our model. If we were trying to predict the factors that influenced the Est. Revenue to be the highest then a value of 0 would skew and ruin the model.
+-   Jordan: I added a Steam Rating column in the Steam_Tidy similar to the one added for Games_Tidy it used the positive reviews divided by the positive reviews plus the negative reviews to get a percentage on the steam rating.
+-   Alex Rosete: When cleaning the data and keeping the integrity, we ran into issues with the date being a string of characters. I had to use the code below to reformat the string of dates into a usable date format. There was also issues with the fields of Review, Est. Revenue, Est. Units Sold, & Followers as they were in a character format. We converted them using the other function below to accomplish that.
+
++// Problems?
+
+-   Travis: After doing the inner join and the cleaning of the data that I needed I was left with 105 rows in my table.... A fraction of the data we originally started with but that was all I could get without fabricating values for roughly 150 rows.
+-   Alex Rosete: There were a few issues when converting the character types to strings because they contained letters in it like "k, m, bn" so we had to compensate for that as well.
+
+## Process: Data Exploration
+
+// Data exploration
+
++// How did we do it (dont talk about results yet, more technical, QMD and such)
+
++// What did we do, creating custom functions and stuff for filters,
+
+-   Travis: Created a function to explore different models and their success with different split
+-   Alex Rosete: Created functions to grab and create a graph based off each unique genre.
+
++// What did we do specifically because our data was the way it was (see above)
+
+-   Alex Rosete: We did a bunch of EDA on the genres and what correlations they had with other columns, since we created that one function.
+
++// Problems?
+
+-   Travis: general lack of data
+-   Alex Rosete: Some of the data in the tables were difficult to use for EDA because of they would obstruct each other resulting in a loss of data integrity.
+
+// Graphs and insights
+
++// What graphs did we use?
+
+-   Alex Rosete: We used a variety of charts within ggplot: Scatter plot & Line graph, & Bar Chart
+
++// Why? What about our data was useful for these graphs
+
+-   Alex Rosete: The data allowed us to see a multitude of factors about each genre such as the avg rev of each genre and others like which genre has the most games.
+
++// What were we hoping to obtain by using these graph types.
+
+-   Alex Rosete: We were hoping to gain an insight of what genre is best to create a game after in terms of profit to be made, and we were able to get a good insight based off some of the EDA visuals we created.
+
++// Problems?
+
+-   Alex Rosete: In the devs data set, many of the columns according to genres are hard to follow and they do not equal up perfectly to a good ration so they are very difficult to use.
+
+// Linear models
+
++// What did we do with linear models?
+
+-   NOTE: why did we start/settle on these variables
+
+-   Travis: The goal of this model was to be able to help us predict which game might make the most Revenue
+
+-   Travis: Used a method from stats where we use the lm() function with all of our variables and one by one run it and remove the one with the highest p val until the r\^2 starts to decrease. meaning that the variables that are left best impact the dependant variable.
+
+    ```         
+    example -> lm(`Est. Revenue` ~ Price + Reviews + steam_ratings + positive_ratings + negative_rating, data = my_data)
+    summary(example)
+    ```
+
+    say for instance negative_ratings had the highest p-val I would remove it and check the resulting summary to see if the r\^2 increases or decreases. If it didn't decrease I'd repreat the process by removing the next highest p-value and repeat.
+
+-   Travis: This process left me with the "og_formula" model that ends up producing the "best" results. These variables also intuitively made sense as to why they might impact the Estimated Revenue of a game.
+
+```         
+og_formula <-`Est. Revenue` ~ Price : `Est. Units Sold` + steam_rating + Reviews + positive_ratings + negative_ratings
+```
+
++// What worked? what didnt? no results yet, just technical
+
+-   Travis: the model that performed the best was one that I called og_formula however it initially was being run with a split of 70-30 and was giving off a mediocre r\^2 value, and high RMSE/MAE numbers. In an attempt to get a better idea of which models might perform the best I created a function that would take in a vector of model formulae and a split. This function was ran with both complex formulae (og_formula) and simple formula (`Est. Revenue` \~ Price) and various splits. After doing this we narrowed down that the og_formula did indeed perform the best out of all other other combinations. Below is the function used and lists of formulae tried.
+
+### Different Formulae
+
+```         
+og_formula <-`Est. Revenue` ~ Price : `Est. Units Sold` + steam_rating + Reviews + positive_ratings + negative_ratings
+
+price_formula <-`Est. Revenue` ~ Price
+
+units_sold_formula <-`Est. Revenue` ~`Est. Units Sold` 
+
+steam_rating_formula <-`Est. Revenue` ~ steam_rating
+
+Reviews_formula <-`Est. Revenue` ~ Reviews
+
+Positive_ratings_formula <-`Est. Revenue` ~ positive_ratings
+
+Negative_ratings_formula <-`Est. Revenue` ~ negative_ratings
+
+test_formula <-`Est. Revenue` ~ Price + `Est. Units Sold` + steam_rating + Reviews + positive_ratings - negative_ratings
+
+# Grouping all formula into 
+formulae <- c(og_formula, price_formula, units_sold_formula, steam_rating_formula, Reviews_formula, Positive_ratings_formula, Negative_ratings_formula, test_formula)
+```
+
+# Function used for training and validation
+
+### v - vector of all formula to run models on
+
+### s - split (fraction from 0-1 representing the portortion of the test data our of our whole data set)
+
+```         
+run_models <- function(v, s){
+  
+  # making sure our split is valid
+  if (s >= 1 || s <= 0) s = 0.8
+  
+  # Splitting data 
+  set.seed(385)  # for reproducibility
+  split_index <- createDataPartition(games_lm$`Est. Revenue`, p = s, list = FALSE)
+  train_data <- games_lm[split_index, ]
+  
+  #split into training and validation, at the end after settling on the model(s) apply them to the test data
+  
+  test_data <- games_lm[-split_index, ]
+  
+  cat("\n\n--------------------------------------------------\n")
+  cat("Using split: ", s, "\n")
+  cat("--------------------------------------------------\n")
+  
+  for(i in v) {
+    # Define the model
+    model <- train(i, data = train_data,method = "lm")
+    
+    # Make predictions on the testing set
+    predictions <- predict(model, newdata = test_data)
+    
+    # Evaluate model performance
+    rmse <- sqrt(mean((test_data$`Est. Revenue` - predictions)^2))
+    mae <- mean(abs(test_data$`Est. Revenue` - predictions))
+    
+    # Compute R-squared
+    ss_residual <- sum((test_data$`Est. Revenue` - predictions)^2)
+    ss_total <- sum((test_data$`Est. Revenue` - mean(test_data$`Est. Revenue`))^2)
+    rsquared <- 1 - (ss_residual / ss_total)
+
+    cat("\nFormula used: ")
+    print(i)
+    cat("Root Mean Squared Error (RMSE): ", rmse, "\n")
+    cat("Mean Absolute Error (MAE): ", mae, "\n")
+    cat("R-squared: ", rsquared, "\n")
+    cat("--------------------------------------------------\n")
+  }
+}
+```
+
+## Running the function created above for Linear Regression
+
+```         
+run_models(formulae, 0.9)
+run_models(formulae, 0.8)
+run_models(formulae, 0.7)
+run_models(formulae, 0.6)
+run_models(formulae, 0.5)
+```
+
++// Why did we do what we did with the linear models
+
++// Problems?
+
+-   major lack of data mostly
+
+# [Games_Tidy EDA]{.underline}
+
+## Bar Chart for Avg Estimated Revenue of all Genres
+
+```{r}
+my_genre_list <- c("Action", "Adventure", "Casual", "Early Access", "Free to Play", "Indie", "MMO", "Racing","RPG", "Simulation", "Sports","Strategy", "Valve")
+colors <- c("red", "green", "blue", "yellow", "orange", "purple", "pink", "skyblue", "coral", "gold", "seagreen", "turquoise", "brown", "gray", "ivory")
+
+genre_colors <- setNames(colors, my_genre_list)
+
+# Initialize an empty list to store genre revenues
+genre_revenues <- list()
+
+# Loop through each genre and calculate the mean revenue
+for (genre in my_genre_list) {
+  # Get revenue for the current genre
+  genre_revenues[[genre]] <- mean(DS_GetAllOf(Games_Tidy, "Genres", genre)$`Est. Revenue`)
+}
+
+# Convert the list of revenues to a data frame
+revenue_data <- data.frame(
+  Genre = names(genre_revenues),
+  Revenue = unlist(genre_revenues)
+)
+
+# Create a bar chart using ggplot with mapped colors
+ggplot(revenue_data, aes(x = reorder(Genre, Revenue), y = Revenue, fill = Genre)) +
+  geom_bar(stat = "identity", alpha = 0.9) +
+  geom_text(aes(label = format(Revenue, scientific = FALSE)), vjust = -0.5, size = 2, color = "black") + # Format Revenue values
+  labs(title = "Avg Estimated Revenue by Genre", x = "Genre", y = "Revenue") +
+  scale_fill_manual(values = genre_colors) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_y_continuous(labels = function(x) format(x, scientific = FALSE))
+```
+
+## Bar Chart for Count of games in all Genres
+
+```{r}
+genre_counts <- list()
+
+# Loop through each genre and calculate the count of games
+for (genre in my_genre_list) {
+  # Get count for the current genre
+  genre_counts[[genre]] <- nrow(DS_GetAllOf(Games_Tidy, "Genres", genre))
+}
+
+# Convert the list of revenues to a data frame
+count_data <- data.frame(
+  Genre = names(genre_counts),
+  Gamecount = unlist(genre_counts)
+)
+
+# Create a bar chart using ggplot with mapped colors
+ggplot(count_data, aes(x = reorder(Genre, Gamecount), y = Gamecount, fill = Genre)) +
+  geom_bar(stat = "identity", alpha = 0.9) +
+  geom_text(aes(label = Gamecount), vjust = -0.5, size = 3, color = "black") +
+  labs(title = "Count of Games", x = "Genre", y = "Count") +
+  scale_fill_manual(values = genre_colors) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## Games Released per year by Genre
+
+```{r}
+# Create and display separate histograms for each genre in your list
+for (genre in my_genre_list) {
+  # Filter data for the current genre
+  genre_subset <- DS_GetAllOf(Games_Tidy, "Genres", genre)
+  genre_subset <- genre_subset %>%
+    mutate(year = format(`First Released`, "%Y"))
+  
+  # Create a histogram for the current genre with unique color
+  p <- ggplot(genre_subset, aes(x = year)) +
+    geom_bar(stat = "count", fill = genre_colors[genre], color = "black") +
+    labs(x = "Years", y = "Count", title = paste("Count of Games per year for", genre)) +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    geom_text(stat = "count", aes(label = ..count..), vjust = -0.5, size = 3)
+  
+  # Print the plot (display in R environment)
+  print(p)
+}
+```
+
+## Bar Chart for Avg Estimated Games sold by Genre
+
+```{r}
+genre_sold <- list()
+
+# Loop through each genre and calculate the mean revenue
+for (genre in my_genre_list) {
+  # Get revenue for the current genre
+  genre_sold[[genre]] <- mean(DS_GetAllOf(Games_Tidy, "Genres", genre)$'Est. Units Sold')
+}
+
+# Convert the list of revenues to a data frame
+sold_data <- data.frame(
+  Genre = names(genre_sold),
+  Sold = unlist(genre_sold)
+)
+
+# Create a bar chart using ggplot with mapped colors
+ggplot(sold_data, aes(x = reorder(Genre, Sold), y = Sold, fill = Genre)) +
+  geom_bar(stat = "identity", alpha = 0.9) +
+  geom_text(aes(label = format(Sold, scientific = FALSE)), vjust = -0.5, size = 2, color = "black") + 
+  labs(title = "Avg Estimated Games sold by Genre", x = "Genre", y = "Sold") +
+  scale_fill_manual(values = genre_colors) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_y_continuous(labels = function(x) format(x, scientific = FALSE)) 
+```
+
+## Bar Chart of Avg Steam Rating per Genre
+
+```{r}
+my_rating_list <- c("Action", "Adventure", "Casual", "Early Access", "Free to Play", "Indie", "MMO", "Racing","RPG", "Simulation", "Sports","Strategy")
+
+data_rating <- Games_Tidy %>%
+  mutate(Transformed_Rating = as.numeric(sub("%", "", `Steam Rating`)) / 100)
+
+genre_rating <- list()
+
+for (genre in my_rating_list) {
+  # Get revenue for the current genre
+  genre_rating[[genre]] <- mean(DS_GetAllOf(data_rating, "Genres", genre)$'Transformed_Rating'*100)
+}
+
+rating_data <- data.frame(
+  Genre = names(genre_rating),
+  Rating = unlist(genre_rating)
+)
+
+ggplot(rating_data, aes(x = reorder(Genre, Rating), y = Rating, fill = Genre)) +
+  geom_bar(stat = "identity", alpha = 0.9) +
+  geom_text(aes(label = format(Rating, scientific = FALSE)), vjust = -0.5, size = 2, color = "black") + 
+  labs(title = "Avg Estimated Ratings % by Genre", x = "Genre", y = "Rating Percentage") +
+  scale_fill_manual(values = genre_colors) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_y_continuous(labels = function(x) format(x, scientific = FALSE)) 
+
+```
+
+# [Dev EDA]{.underline}
+
+## Count of Games by Classification
+
+```{r}
+classification_list <- c("AA", "AAA", "Indie")
+colored <- c("red", "green", "blue")
+genre_Dev <- setNames(colored, classification_list)
+
+classification_count <- list()
+
+for (genre in classification_list) {
+  # Get count for the current genre
+  classification_count[[genre]] <- nrow(DS_GetAllOf(Dev_Tidy, "Classification", genre))
+}
+
+classification_data <- data.frame(
+  Genre = names(classification_count),
+  Gamecount = unlist(classification_count)
+)
+
+ggplot(classification_data, aes(x = reorder(Genre, Gamecount), y = Gamecount, fill = Genre)) +
+  geom_bar(stat = "identity", alpha = 0.9) +
+  geom_text(aes(label = Gamecount), vjust = -0.5, size = 3, color = "black") +
+  labs(title = "Count of Games", x = "Classification", y = "Count") +
+  scale_fill_manual(values = genre_Dev) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## Point Graph to show Avg revenue & Number of games by Classification
+
+```{r}
+ggplot(data = Dev_Tidy, mapping = aes(x=Dev_Tidy$`Released games`, y=Dev_Tidy$`Avg revenue per game`, color= Classification)) +
+  geom_point() + 
+  scale_y_continuous(labels = function(x) format(x, scientific = FALSE)) +
+  labs(title = "Avg revenue & Number of games by Classification", x = "Released games", y = "Revenue")
+```
+
+```{r}
+ggplot(data = Dev_Tidy, mapping = aes(x = `Released games`, y = `Avg revenue per game`, color = Classification)) +
+  geom_point() +
+  geom_line() +
+  scale_y_continuous(labels = function(x) format(x, scientific = FALSE)) +
+  labs(title = "Avg revenue & Number of games by Classification", x = "Released games", y = "Revenue") +
+  facet_wrap(~ Classification, scales = "free")
+```
+
+# [Joining Data]{.underline}
+
+## Inner Join
+
+```{r}
+# Joining tables 
+games_joined_inner = inner_join(Games_Tidy, steam, join_by(Name == name))
+# Grabbing columns relevant to regression and removing Est. Revenue Outliers
+# Altering the steam rating column to be dbl to be used in linear regression
+games_lm <- games_joined_inner %>% 
+  mutate(steam_rating = as.numeric(gsub("%", "", c(`Steam Rating`))) / 100)
+games_lm <- games_lm %>% 
+  select(Name, Price,`Est. Revenue`, `Est. Units Sold`,Reviews ,steam_rating, Genres, Publishers, positive_ratings, negative_ratings, average_playtime, median_playtime)
+games_lm <- games_lm %>% 
+  filter(`Est. Revenue` > 0)
+
+# Defining model formulae
+og_formula <-`Est. Revenue` ~ Price : `Est. Units Sold` + steam_rating + Reviews + positive_ratings + negative_ratings
+
+price_formula <-`Est. Revenue` ~ Price
+
+units_sold_formula <-`Est. Revenue` ~`Est. Units Sold` 
+
+steam_rating_formula <-`Est. Revenue` ~ steam_rating
+
+Reviews_formula <-`Est. Revenue` ~ Reviews
+
+Positive_ratings_formula <-`Est. Revenue` ~ positive_ratings
+
+Negative_ratings_formula <-`Est. Revenue` ~ negative_ratings
+
+test_formula <-`Est. Revenue` ~ Price + `Est. Units Sold` + steam_rating + Reviews + positive_ratings - negative_ratings
+
+# Grouping all formula into 
+formulae <- c(og_formula, price_formula, units_sold_formula, steam_rating_formula, Reviews_formula, Positive_ratings_formula, Negative_ratings_formula, test_formula)
+
+### Training and testing data
+# v - vector of all formula to run models on
+# s - split (fraction from 0-1 representing the portortion of the test data our of our whole data set)
+run_models <- function(v, s){
+  
+  # making sure our split is valid
+  if (s >= 1 || s <= 0) s = 0.8
+  
+  # Splitting data 
+  set.seed(385)  # for reproducibility
+  split_index <- createDataPartition(games_lm$`Est. Revenue`, p = s, list = FALSE)
+  train_data <- games_lm[split_index, ]
+  
+  #split into training and validation, at the end after settling on the model(s) apply them to the test data
+  
+  test_data <- games_lm[-split_index, ]
+  
+  cat("\n\n--------------------------------------------------\n")
+  cat("Using split: ", s, "\n")
+  cat("--------------------------------------------------\n")
+  
+  for(i in v) {
+    # Define the model
+    model <- train(i, data = train_data,method = "lm")
+    
+    # Make predictions on the testing set
+    predictions <- predict(model, newdata = test_data)
+    
+    # Evaluate model performance
+    rmse <- sqrt(mean((test_data$`Est. Revenue` - predictions)^2))
+    mae <- mean(abs(test_data$`Est. Revenue` - predictions))
+    
+    # Compute R-squared
+    ss_residual <- sum((test_data$`Est. Revenue` - predictions)^2)
+    ss_total <- sum((test_data$`Est. Revenue` - mean(test_data$`Est. Revenue`))^2)
+    rsquared <- 1 - (ss_residual / ss_total)
+
+    cat("\nFormula used: ")
+    print(i)
+    cat("Root Mean Squared Error (RMSE): ", rmse, "\n")
+    cat("Mean Absolute Error (MAE): ", mae, "\n")
+    cat("R-squared: ", rsquared, "\n")
+    cat("--------------------------------------------------\n")
+  }
+}
+
+## Running the function created above for Linear Regression
+#run_models(formulae, 0.9)
+#run_models(formulae, 0.8)
+#run_models(formulae, 0.7)
+run_models(formulae, 0.6)
+#run_models(formulae, 0.5
+```
+
+# Results
+
+## Process: Answer
+
++// What was our question again?
+
++// What games make most money
+
++// What games have the most players
+
++// What games have the most competition
+
++// How did we end up defining things
+
++// Issues with blowout hits (MAYBE PUT THIS IN THE SECTIONS BEFORE IE: HANDLING MASSIVE OUTLIERS)
+
+## Future Work
+
+## Conclusion
+
+Kadyn: As stated in our introduction, this sort of analysis continues to be commonplace in the development industry. If a party were to look at our research and want to push the needle, I believe these areas could be improved upon.
+
+-   Data collection
+
+    -   Data collection ended up being more difficult than expected. A more comprehensive data set would go a long way to achieving some of the analytic goals we set out to accomplish.
+
+-   Temporal Analysis
+
+    -   Our data is sporadic in nature but time is another strong point which could be more closely observed. Do certain games sell better during holiday seasons? Were there any trends that carried certain titles into stardom? A time series analysis would be incredibly beneficial to realizing these models for operational use.
+
+-   User behavior
+
+    -   Data was not collected nor included for user interaction. Things like session time, social interactions, and purchase decisions within a game play a large role in revenue accumulation for live service games.
+
+In conclusion, while our current analysis provided valuable insights through exploratory data analysis, the potential for more accurate and reliable revenue prediction models remains untapped due to data limitations. Future endeavors focusing on expanding data sources, refining features, exploring advanced modeling techniques, and incorporating external market dynamics will substantially enhance the predictive capabilities of our revenue analysis for game development.
+
+### Contributions
+
+Travis: Linear Model, EDA, Data cleaning
+
+Alex Rosete: EDA Analysis, Data Cleaning, EDA visual creation, Data Finding
+
+Jordan: Data Finding, Data Cleaning, EDA visual creation, EDA Analysis
+
+Kadyn: EDA Analysis, Data Cleaning, Business overview, Report Formatting/Structure
